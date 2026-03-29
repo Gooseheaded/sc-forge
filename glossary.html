@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BW Glossary</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: monospace; background: #111; color: #ccc; margin: 0; padding: 20px; }
+  nav { margin-bottom: 24px; }
+  nav a { color: #888; text-decoration: none; margin-right: 16px; }
+  nav a:hover { color: #ccc; }
+  nav a.active { color: #f0c040; }
+  h1 { color: #f0c040; margin: 0 0 20px 0; }
+
+  .layout { display: flex; gap: 20px; }
+
+  .sidebar { width: 260px; flex-shrink: 0; }
+
+  .race-section { margin-bottom: 20px; }
+  .race-label {
+    font-size: 0.7em;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #555;
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #222;
+  }
+  .race-label.terran { color: #5b9bd5; }
+  .race-label.protoss { color: #b59a2a; }
+  .race-label.zerg { color: #7a3fa0; }
+
+  .type-label {
+    font-size: 0.65em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #444;
+    margin: 8px 0 4px 0;
+  }
+
+  .unit-list { list-style: none; margin: 0; padding: 0; }
+  .unit-list li button {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-family: monospace;
+    font-size: 0.9em;
+    cursor: pointer;
+    padding: 3px 6px;
+    width: 100%;
+    text-align: left;
+    border-radius: 2px;
+  }
+  .unit-list li button:hover { background: #1e1e1e; color: #fff; }
+  .unit-list li button.selected { background: #222; color: #f0c040; }
+
+  .detail-panel {
+    flex: 1;
+    background: #161616;
+    border: 1px solid #2a2a2a;
+    border-radius: 4px;
+    padding: 28px;
+    min-height: 300px;
+  }
+
+  .placeholder { color: #444; font-size: 0.95em; margin-top: 60px; text-align: center; }
+
+  .detail-name { font-size: 1.8em; color: #fff; margin: 0 0 4px 0; }
+  .detail-meta { color: #555; font-size: 0.85em; margin-bottom: 28px; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+  }
+  .stat-box {
+    background: #1e1e1e;
+    border: 1px solid #2a2a2a;
+    border-radius: 3px;
+    padding: 14px 16px;
+  }
+  .stat-label { font-size: 0.7em; text-transform: uppercase; letter-spacing: 1px; color: #555; margin-bottom: 6px; }
+  .stat-value { font-size: 1.4em; color: #e0e0e0; }
+  .stat-value.highlight { color: #f0c040; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html">Quiz</a>
+  <a href="glossary.html" class="active">Glossary</a>
+</nav>
+
+<h1>Glossary</h1>
+
+<div class="layout">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="detail-panel" id="detail">
+    <div class="placeholder">Select a unit or building</div>
+  </div>
+</div>
+
+<script>
+const data = [
+  // Terran Units
+  {name:"SCV",race:"Terran",type:"Unit",buildTime:12.6,mineralCost:50,gasCost:0,supplyCost:1,builtFrom:"Command Center"},
+  {name:"Marine",race:"Terran",type:"Unit",buildTime:15.1,mineralCost:50,gasCost:0,supplyCost:1,builtFrom:"Barracks"},
+  {name:"Firebat",race:"Terran",type:"Unit",buildTime:15.1,mineralCost:50,gasCost:25,supplyCost:1,builtFrom:"Barracks"},
+  {name:"Medic",race:"Terran",type:"Unit",buildTime:18.9,mineralCost:50,gasCost:25,supplyCost:1,builtFrom:"Barracks"},
+  {name:"Ghost",race:"Terran",type:"Unit",buildTime:31.5,mineralCost:25,gasCost:75,supplyCost:1,builtFrom:"Barracks"},
+  {name:"Vulture",race:"Terran",type:"Unit",buildTime:18.9,mineralCost:75,gasCost:0,supplyCost:2,builtFrom:"Factory"},
+  {name:"Siege Tank",race:"Terran",type:"Unit",buildTime:31.5,mineralCost:150,gasCost:100,supplyCost:2,builtFrom:"Factory"},
+  {name:"Goliath",race:"Terran",type:"Unit",buildTime:25.2,mineralCost:100,gasCost:50,supplyCost:2,builtFrom:"Factory"},
+  {name:"Wraith",race:"Terran",type:"Unit",buildTime:37.8,mineralCost:150,gasCost:100,supplyCost:2,builtFrom:"Starport"},
+  {name:"Dropship",race:"Terran",type:"Unit",buildTime:31.5,mineralCost:100,gasCost:100,supplyCost:2,builtFrom:"Starport"},
+  {name:"Battlecruiser",race:"Terran",type:"Unit",buildTime:83.8,mineralCost:400,gasCost:300,supplyCost:6,builtFrom:"Starport"},
+  {name:"Science Vessel",race:"Terran",type:"Unit",buildTime:50,mineralCost:100,gasCost:225,supplyCost:2,builtFrom:"Starport"},
+  {name:"Valkyrie",race:"Terran",type:"Unit",buildTime:31.5,mineralCost:250,gasCost:125,supplyCost:3,builtFrom:"Starport"},
+  // Terran Buildings
+  {name:"Command Center",race:"Terran",type:"Building",buildTime:120,mineralCost:400,gasCost:0,supplyCost:0,builtFrom:"SCV"},
+  {name:"Supply Depot",race:"Terran",type:"Building",buildTime:40,mineralCost:100,gasCost:0,supplyCost:0,builtFrom:"SCV"},
+  {name:"Refinery",race:"Terran",type:"Building",buildTime:40,mineralCost:100,gasCost:0,supplyCost:0,builtFrom:"SCV"},
+  {name:"Barracks",race:"Terran",type:"Building",buildTime:80,mineralCost:150,gasCost:0,supplyCost:0,builtFrom:"SCV"},
+  {name:"Engineering Bay",race:"Terran",type:"Building",buildTime:60,mineralCost:125,gasCost:0,supplyCost:0,builtFrom:"SCV"},
+  {name:"Academy",race:"Terran",type:"Building",buildTime:80,mineralCost:150,gasCost:0,supplyCost:0,builtFrom:"SCV"},
+  {name:"Factory",race:"Terran",type:"Building",buildTime:80,mineralCost:200,gasCost:100,supplyCost:0,builtFrom:"SCV"},
+  {name:"Starport",race:"Terran",type:"Building",buildTime:70,mineralCost:150,gasCost:100,supplyCost:0,builtFrom:"SCV"},
+  {name:"Armory",race:"Terran",type:"Building",buildTime:80,mineralCost:100,gasCost:50,supplyCost:0,builtFrom:"SCV"},
+  {name:"Missile Turret",race:"Terran",type:"Building",buildTime:30,mineralCost:75,gasCost:0,supplyCost:0,builtFrom:"SCV"},
+  {name:"Bunker",race:"Terran",type:"Building",buildTime:30,mineralCost:100,gasCost:0,supplyCost:0,builtFrom:"SCV"},
+  // Protoss Units
+  {name:"Probe",race:"Protoss",type:"Unit",buildTime:12.6,mineralCost:50,gasCost:0,supplyCost:1,builtFrom:"Nexus"},
+  {name:"Zealot",race:"Protoss",type:"Unit",buildTime:25.2,mineralCost:100,gasCost:0,supplyCost:2,builtFrom:"Gateway"},
+  {name:"Dragoon",race:"Protoss",type:"Unit",buildTime:31.5,mineralCost:125,gasCost:50,supplyCost:2,builtFrom:"Gateway"},
+  {name:"High Templar",race:"Protoss",type:"Unit",buildTime:31.5,mineralCost:50,gasCost:150,supplyCost:2,builtFrom:"Gateway"},
+  {name:"Dark Templar",race:"Protoss",type:"Unit",buildTime:31.5,mineralCost:125,gasCost:100,supplyCost:2,builtFrom:"Gateway"},
+  {name:"Archon",race:"Protoss",type:"Unit",buildTime:13,mineralCost:0,gasCost:0,supplyCost:0,builtFrom:"High Templar"},
+  {name:"Dark Archon",race:"Protoss",type:"Unit",buildTime:12.6,mineralCost:0,gasCost:0,supplyCost:0,builtFrom:"Dark Templar"},
+  {name:"Reaver",race:"Protoss",type:"Unit",buildTime:44,mineralCost:200,gasCost:100,supplyCost:4,builtFrom:"Robotics Facility"},
+  {name:"Shuttle",race:"Protoss",type:"Unit",buildTime:37.8,mineralCost:200,gasCost:0,supplyCost:2,builtFrom:"Robotics Facility"},
+  {name:"Observer",race:"Protoss",type:"Unit",buildTime:25.2,mineralCost:25,gasCost:75,supplyCost:1,builtFrom:"Robotics Facility"},
+  {name:"Scout",race:"Protoss",type:"Unit",buildTime:50,mineralCost:275,gasCost:125,supplyCost:3,builtFrom:"Stargate"},
+  {name:"Corsair",race:"Protoss",type:"Unit",buildTime:25.2,mineralCost:150,gasCost:100,supplyCost:2,builtFrom:"Stargate"},
+  {name:"Carrier",race:"Protoss",type:"Unit",buildTime:88,mineralCost:350,gasCost:250,supplyCost:6,builtFrom:"Stargate"},
+  {name:"Arbiter",race:"Protoss",type:"Unit",buildTime:100.8,mineralCost:100,gasCost:350,supplyCost:4,builtFrom:"Stargate"},
+  // Protoss Buildings
+  {name:"Nexus",race:"Protoss",type:"Building",buildTime:120,mineralCost:400,gasCost:0,supplyCost:0,builtFrom:"Probe"},
+  {name:"Pylon",race:"Protoss",type:"Building",buildTime:30,mineralCost:100,gasCost:0,supplyCost:0,builtFrom:"Probe"},
+  {name:"Assimilator",race:"Protoss",type:"Building",buildTime:40,mineralCost:100,gasCost:0,supplyCost:0,builtFrom:"Probe"},
+  {name:"Gateway",race:"Protoss",type:"Building",buildTime:60,mineralCost:150,gasCost:0,supplyCost:0,builtFrom:"Probe"},
+  {name:"Forge",race:"Protoss",type:"Building",buildTime:40,mineralCost:150,gasCost:0,supplyCost:0,builtFrom:"Probe"},
+  {name:"Photon Cannon",race:"Protoss",type:"Building",buildTime:50,mineralCost:150,gasCost:0,supplyCost:0,builtFrom:"Probe"},
+  {name:"Cybernetics Core",race:"Protoss",type:"Building",buildTime:60,mineralCost:200,gasCost:0,supplyCost:0,builtFrom:"Probe"},
+  {name:"Robotics Facility",race:"Protoss",type:"Building",buildTime:80,mineralCost:200,gasCost:200,supplyCost:0,builtFrom:"Probe"},
+  {name:"Stargate",race:"Protoss",type:"Building",buildTime:70,mineralCost:150,gasCost:150,supplyCost:0,builtFrom:"Probe"},
+  {name:"Citadel of Adun",race:"Protoss",type:"Building",buildTime:60,mineralCost:150,gasCost:100,supplyCost:0,builtFrom:"Probe"},
+  {name:"Robotics Support Bay",race:"Protoss",type:"Building",buildTime:30,mineralCost:150,gasCost:100,supplyCost:0,builtFrom:"Probe"},
+  {name:"Fleet Beacon",race:"Protoss",type:"Building",buildTime:60,mineralCost:300,gasCost:200,supplyCost:0,builtFrom:"Probe"},
+  {name:"Templar Archives",race:"Protoss",type:"Building",buildTime:60,mineralCost:150,gasCost:200,supplyCost:0,builtFrom:"Probe"},
+  {name:"Observatory",race:"Protoss",type:"Building",buildTime:30,mineralCost:50,gasCost:100,supplyCost:0,builtFrom:"Probe"},
+  {name:"Arbiter Tribunal",race:"Protoss",type:"Building",buildTime:60,mineralCost:200,gasCost:150,supplyCost:0,builtFrom:"Probe"},
+  {name:"Shield Battery",race:"Protoss",type:"Building",buildTime:30,mineralCost:100,gasCost:0,supplyCost:0,builtFrom:"Probe"},
+  // Zerg Units
+  {name:"Drone",race:"Zerg",type:"Unit",buildTime:12.6,mineralCost:50,gasCost:0,supplyCost:1,builtFrom:"Larva"},
+  {name:"Zergling",race:"Zerg",type:"Unit",buildTime:18,mineralCost:50,gasCost:0,supplyCost:1,builtFrom:"Larva"},
+  {name:"Hydralisk",race:"Zerg",type:"Unit",buildTime:18,mineralCost:75,gasCost:25,supplyCost:1,builtFrom:"Larva"},
+  {name:"Mutalisk",race:"Zerg",type:"Unit",buildTime:25,mineralCost:100,gasCost:100,supplyCost:2,builtFrom:"Larva"},
+  {name:"Scourge",race:"Zerg",type:"Unit",buildTime:19,mineralCost:25,gasCost:75,supplyCost:1,builtFrom:"Larva"},
+  {name:"Ultralisk",race:"Zerg",type:"Unit",buildTime:38,mineralCost:200,gasCost:200,supplyCost:4,builtFrom:"Larva"},
+  {name:"Defiler",race:"Zerg",type:"Unit",buildTime:31.5,mineralCost:50,gasCost:150,supplyCost:2,builtFrom:"Larva"},
+  {name:"Queen",race:"Zerg",type:"Unit",buildTime:31.5,mineralCost:100,gasCost:100,supplyCost:2,builtFrom:"Larva"},
+  {name:"Overlord",race:"Zerg",type:"Unit",buildTime:25,mineralCost:100,gasCost:0,supplyCost:0,builtFrom:"Larva"},
+  {name:"Lurker",race:"Zerg",type:"Unit",buildTime:25,mineralCost:125,gasCost:125,supplyCost:2,builtFrom:"Hydralisk"},
+  {name:"Guardian",race:"Zerg",type:"Unit",buildTime:25,mineralCost:150,gasCost:200,supplyCost:2,builtFrom:"Mutalisk"},
+  {name:"Devourer",race:"Zerg",type:"Unit",buildTime:25,mineralCost:150,gasCost:150,supplyCost:2,builtFrom:"Mutalisk"},
+  // Zerg Buildings
+  {name:"Hatchery",race:"Zerg",type:"Building",buildTime:120,mineralCost:300,gasCost:0,supplyCost:0,builtFrom:"Drone"},
+  {name:"Lair",race:"Zerg",type:"Building",buildTime:100,mineralCost:150,gasCost:100,supplyCost:0,builtFrom:"Hatchery"},
+  {name:"Hive",race:"Zerg",type:"Building",buildTime:120,mineralCost:200,gasCost:150,supplyCost:0,builtFrom:"Lair"},
+  {name:"Spawning Pool",race:"Zerg",type:"Building",buildTime:80,mineralCost:200,gasCost:0,supplyCost:0,builtFrom:"Drone"},
+  {name:"Creep Colony",race:"Zerg",type:"Building",buildTime:20,mineralCost:75,gasCost:0,supplyCost:0,builtFrom:"Drone"},
+  {name:"Sunken Colony",race:"Zerg",type:"Building",buildTime:20,mineralCost:50,gasCost:0,supplyCost:0,builtFrom:"Creep Colony"},
+  {name:"Spore Colony",race:"Zerg",type:"Building",buildTime:20,mineralCost:50,gasCost:0,supplyCost:0,builtFrom:"Creep Colony"},
+  {name:"Extractor",race:"Zerg",type:"Building",buildTime:40,mineralCost:50,gasCost:0,supplyCost:0,builtFrom:"Drone"},
+  {name:"Evolution Chamber",race:"Zerg",type:"Building",buildTime:40,mineralCost:75,gasCost:0,supplyCost:0,builtFrom:"Drone"},
+  {name:"Hydralisk Den",race:"Zerg",type:"Building",buildTime:40,mineralCost:100,gasCost:50,supplyCost:0,builtFrom:"Drone"},
+  {name:"Spire",race:"Zerg",type:"Building",buildTime:120,mineralCost:200,gasCost:150,supplyCost:0,builtFrom:"Drone"},
+  {name:"Greater Spire",race:"Zerg",type:"Building",buildTime:120,mineralCost:100,gasCost:150,supplyCost:0,builtFrom:"Spire"},
+  {name:"Queens Nest",race:"Zerg",type:"Building",buildTime:60,mineralCost:150,gasCost:100,supplyCost:0,builtFrom:"Drone"},
+  {name:"Ultralisk Cavern",race:"Zerg",type:"Building",buildTime:80,mineralCost:150,gasCost:200,supplyCost:0,builtFrom:"Drone"},
+  {name:"Defiler Mound",race:"Zerg",type:"Building",buildTime:60,mineralCost:100,gasCost:100,supplyCost:0,builtFrom:"Drone"},
+  {name:"Nydus Canal",race:"Zerg",type:"Building",buildTime:40,mineralCost:150,gasCost:0,supplyCost:0,builtFrom:"Drone"},
+];
+
+const races = ["Terran", "Protoss", "Zerg"];
+const raceClass = {Terran:"terran", Protoss:"protoss", Zerg:"zerg"};
+
+let selected = null;
+
+function buildSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  races.forEach(race => {
+    const section = document.createElement('div');
+    section.className = 'race-section';
+
+    const label = document.createElement('div');
+    label.className = `race-label ${raceClass[race]}`;
+    label.textContent = race;
+    section.appendChild(label);
+
+    ['Unit', 'Building'].forEach(type => {
+      const items = data.filter(d => d.race === race && d.type === type);
+      if (!items.length) return;
+
+      const typeLabel = document.createElement('div');
+      typeLabel.className = 'type-label';
+      typeLabel.textContent = type + 's';
+      section.appendChild(typeLabel);
+
+      const ul = document.createElement('ul');
+      ul.className = 'unit-list';
+      items.forEach(item => {
+        const li = document.createElement('li');
+        const btn = document.createElement('button');
+        btn.textContent = item.name;
+        btn.dataset.name = item.name;
+        btn.onclick = () => selectItem(item, btn);
+        li.appendChild(btn);
+        ul.appendChild(li);
+      });
+      section.appendChild(ul);
+    });
+
+    sidebar.appendChild(section);
+  });
+}
+
+function selectItem(item, btn) {
+  if (selected) selected.classList.remove('selected');
+  btn.classList.add('selected');
+  selected = btn;
+  renderDetail(item);
+}
+
+function renderDetail(item) {
+  const raceColor = {Terran:'#5b9bd5', Protoss:'#b59a2a', Zerg:'#7a3fa0'};
+  const panel = document.getElementById('detail');
+  panel.innerHTML = `
+    <div class="detail-name">${item.name}</div>
+    <div class="detail-meta" style="color:${raceColor[item.race]}">${item.race} &mdash; ${item.type}</div>
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-label">Build Time</div>
+        <div class="stat-value highlight">${item.buildTime}s</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Minerals</div>
+        <div class="stat-value">${item.mineralCost}</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Gas</div>
+        <div class="stat-value">${item.gasCost}</div>
+      </div>
+      ${item.supplyCost > 0 ? `
+      <div class="stat-box">
+        <div class="stat-label">Supply</div>
+        <div class="stat-value">${item.supplyCost}</div>
+      </div>` : ''}
+      <div class="stat-box">
+        <div class="stat-label">Built From</div>
+        <div class="stat-value" style="font-size:1em">${item.builtFrom}</div>
+      </div>
+    </div>
+  `;
+}
+
+buildSidebar();
+</script>
+</body>
+</html>
