@@ -59,6 +59,23 @@
   }
   #new-seed-btn:hover { border-color: #666; color: #aaa; }
 
+  /* ── Quiz Options ── */
+  .option-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .option-label { color: #555; font-size: 0.85em; width: 72px; flex-shrink: 0; }
+  .opt-btn {
+    background: none; border: 1px solid #2a2a2a; color: #555;
+    font-family: monospace; font-size: 0.8em; padding: 4px 11px;
+    cursor: pointer; border-radius: 3px; transition: none;
+  }
+  .opt-btn:hover { border-color: #555; color: #aaa; }
+  .opt-btn.sel { border-color: #f0c040; color: #f0c040; }
+  .opt-btn[data-race="Terran"].sel  { border-color: #4a82be; color: #4a82be; }
+  .opt-btn[data-race="Protoss"].sel { border-color: #a08820; color: #a08820; }
+  .opt-btn[data-race="Zerg"].sel    { border-color: #7030a0; color: #7030a0; }
+  .opt-btn[data-diff="easy"].sel    { border-color: #4caf50; color: #4caf50; }
+  .opt-btn[data-diff="hard"].sel    { border-color: #f44336; color: #f44336; }
+  #diff-hint { font-size: 0.75em; color: #3a3a3a; margin-bottom: 18px; min-height: 1.1em; }
+
   /* ── Glossary ── */
   #glossary-wrap { display: flex; gap: 24px; height: calc(100vh - 100px); }
 
@@ -106,6 +123,20 @@
 <div id="page-quiz" class="page visible">
   <div id="quiz-wrap">
     <h1>BW Build Time Quiz</h1>
+    <div class="option-row">
+      <span class="option-label">Race</span>
+      <button class="opt-btn sel" data-race="all"     onclick="selectRace(this)">All</button>
+      <button class="opt-btn"     data-race="Terran"  onclick="selectRace(this)">Terran</button>
+      <button class="opt-btn"     data-race="Protoss" onclick="selectRace(this)">Protoss</button>
+      <button class="opt-btn"     data-race="Zerg"    onclick="selectRace(this)">Zerg</button>
+    </div>
+    <div class="option-row">
+      <span class="option-label">Difficulty</span>
+      <button class="opt-btn"     data-diff="easy"   onclick="selectDiff(this)">Easy</button>
+      <button class="opt-btn sel" data-diff="medium" onclick="selectDiff(this)">Medium</button>
+      <button class="opt-btn"     data-diff="hard"   onclick="selectDiff(this)">Hard</button>
+    </div>
+    <div id="diff-hint"></div>
     <div id="seed-row">
       <span>Seed</span>
       <input id="seed-input" type="number" min="0" />
@@ -233,6 +264,30 @@ const data = [
 
 const units = data.filter(d => d.type === 'Unit');
 
+let selectedRace = 'all';
+let selectedDiff = 'medium';
+
+const diffHints = {
+  easy:   'Wrong choices are far from the correct answer.',
+  medium: 'Wrong choices are random.',
+  hard:   'Wrong choices are closest to the correct answer.',
+};
+
+function selectRace(btn) {
+  document.querySelectorAll('[data-race]').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  selectedRace = btn.dataset.race;
+  startQuiz();
+}
+
+function selectDiff(btn) {
+  document.querySelectorAll('[data-diff]').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  selectedDiff = btn.dataset.diff;
+  document.getElementById('diff-hint').textContent = diffHints[selectedDiff];
+  startQuiz();
+}
+
 // ─────────────────────────────────────────
 // NAVIGATION
 // ─────────────────────────────────────────
@@ -283,7 +338,8 @@ function startQuiz() {
   const seed = isNaN(raw) ? randomSeed() : raw;
   document.getElementById('seed-input').value = seed;
   rng = mulberry32(seed);
-  questions = shuffle(units).slice(0, 10);
+  const pool = selectedRace === 'all' ? units : units.filter(u => u.race === selectedRace);
+  questions = shuffle(pool).slice(0, 10);
   current = 0;
   score = 0;
   document.getElementById('score-screen').style.display = 'none';
@@ -292,13 +348,28 @@ function startQuiz() {
 }
 
 function makeChoices(correct) {
-  const wrong = shuffle(allTimes.filter(t => t !== correct)).slice(0, 3);
+  const wrongTimes = allTimes.filter(t => t !== correct);
+  let pool;
+  if (selectedDiff === 'easy') {
+    // Use the furthest half so wrong choices are obviously wrong
+    const sorted = [...wrongTimes].sort((a, b) => Math.abs(a - correct) - Math.abs(b - correct));
+    pool = sorted.slice(Math.ceil(sorted.length / 2));
+  } else if (selectedDiff === 'hard') {
+    // Use the 5 closest so any of them could plausibly be right
+    const sorted = [...wrongTimes].sort((a, b) => Math.abs(a - correct) - Math.abs(b - correct));
+    pool = sorted.slice(0, Math.min(5, sorted.length));
+  } else {
+    pool = wrongTimes;
+  }
+  const wrong = shuffle(pool).slice(0, 3);
   return shuffle([correct, ...wrong]);
 }
 
 function showQuestion() {
   const q = questions[current];
-  document.getElementById('progress').textContent = `Question ${current + 1} / 10`;
+  const raceLabel = selectedRace === 'all' ? 'All Races' : selectedRace;
+  document.getElementById('progress').textContent =
+    `Question ${current + 1} / 10  ·  ${raceLabel}  ·  ${selectedDiff.charAt(0).toUpperCase() + selectedDiff.slice(1)}`;
   document.getElementById('unit-name').textContent = q.name;
   document.getElementById('result').textContent = '';
   document.getElementById('next-btn').style.display = 'none';
@@ -442,6 +513,7 @@ function renderDetail(item) {
 // ─────────────────────────────────────────
 buildSidebar();
 document.getElementById('seed-input').value = randomSeed();
+document.getElementById('diff-hint').textContent = diffHints[selectedDiff];
 startQuiz();
 
 const hash = location.hash.replace('#', '');
