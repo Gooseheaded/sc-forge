@@ -4,7 +4,8 @@
       "WebFetch(domain:liquipedia.net)",
       "Bash(curl -s \"https://liquipedia.net/starcraft/Terran_Upgrades_\\(StarCraft\\)\" -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\")",
       "Bash(curl -s \"https://liquipedia.net/starcraft/Protoss_Upgrades_\\(StarCraft\\)\" -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\")",
-      "Bash(curl -s \"https://liquipedia.net/starcraft/Zerg_Upgrades_\\(StarCraft\\)\" -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\")"
+      "Bash(curl -s \"https://liquipedia.net/starcraft/Zerg_Upgrades_\\(StarCraft\\)\" -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\")",
+      "Bash(python:*)"
     ]
   }
 }
