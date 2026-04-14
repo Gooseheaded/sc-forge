@@ -88,31 +88,56 @@ nav a.active { color: #f0c040; }
 #zoom-info { font-size: 0.72em; color: #2e2e2e; padding: 0 4px; }
 .tbtn-danger:hover { border-color: #f44336; color: #f44336; }
 
+#set-tabs {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-bottom: 1px solid #1a1a1a;
+  flex-shrink: 0; overflow-x: auto;
+}
+.set-tab {
+  background: none; border: 1px solid #252525; color: #666;
+  font-family: monospace; font-size: 0.78em; padding: 5px 10px;
+  border-radius: 999px; cursor: pointer; white-space: nowrap;
+}
+.set-tab:hover { border-color: #555; color: #aaa; }
+.set-tab.active { border-color: #f0c040; color: #f0c040; }
+
 /* ── Timeline wrapper ── */
 #tl-wrap { display: flex; flex: 1; overflow: hidden; min-height: 0; }
 
 /* Fixed label column */
 #label-col {
-  width: 52px; flex-shrink: 0; display: flex; flex-direction: column;
+  width: 118px; flex-shrink: 0; display: flex; flex-direction: column;
   background: #111; border-right: 1px solid #1a1a1a; z-index: 20;
 }
 #label-ruler-spacer {
   height: 26px; flex-shrink: 0; border-bottom: 1px solid #1a1a1a;
   background: #0e0e0e;
 }
-#label-supply-cell {
-  height: 28px; flex-shrink: 0; border-bottom: 1px solid #1e1e1e;
+#label-list { overflow: hidden; flex: 1; }
+.label-set-header {
+  height: 30px; display: flex; align-items: center;
+  padding: 0 8px; border-bottom: 1px solid #1d1d1d;
+  font-size: 0.72em; color: #666; background: #121212;
+  text-transform: uppercase; letter-spacing: 1px; user-select: none;
+}
+.label-set-header.active { color: #f0c040; }
+.label-supply-cell {
+  height: 28px; border-bottom: 1px solid #1e1e1e;
   background: #0c0c0c; display: flex; align-items: center;
   justify-content: flex-end; padding-right: 8px;
   font-size: 0.58em; color: #2a5a2a; text-transform: uppercase;
   letter-spacing: 1px; user-select: none;
 }
-#label-list { overflow: hidden; flex: 1; }
 .label-cell {
   height: 42px; display: flex; align-items: center; justify-content: flex-end;
   padding-right: 8px; font-size: 0.62em; color: #2e2e2e;
   border-bottom: 1px solid #1a1a1a; letter-spacing: 1px;
   text-transform: uppercase; user-select: none;
+}
+.label-drop-cell {
+  height: 20px; border-bottom: 1px solid #141414; color: #222;
+  display: flex; align-items: center; justify-content: flex-end;
+  padding-right: 8px; font-size: 0.58em; user-select: none;
 }
 
 /* Scrollable timeline */
@@ -133,7 +158,7 @@ nav a.active { color: #f0c040; }
 }
 
 /* Supply row */
-#supply-row {
+.supply-row {
   height: 28px; position: relative; background: #0c0c0c;
   border-bottom: 1px solid #1e1e1e; overflow: hidden;
 }
@@ -153,11 +178,24 @@ nav a.active { color: #f0c040; }
 
 /* Track rows */
 #tracks { position: relative; /* width set by JS */ }
+.tracks-section { border-bottom: 1px solid #171717; }
+.set-section-header {
+  height: 30px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 10px; border-bottom: 1px solid #1d1d1d;
+  background: #121212; font-size: 0.78em; color: #666;
+  cursor: pointer; user-select: none;
+}
+.set-section-header.active { color: #f0c040; }
+.set-section-meta { color: #333; font-size: 0.72em; }
 .track-row {
   height: 42px; position: relative; border-bottom: 1px solid #141414;
   background: #111;
 }
 .track-row.drag-over { background: #151515; }
+.track-drop-row {
+  height: 20px; border-bottom: 1px solid #141414; background: #101010;
+}
+.track-drop-row.active { background: #121212; }
 
 /* Blocks */
 .bl {
@@ -168,6 +206,9 @@ nav a.active { color: #f0c040; }
 }
 .bl:hover { filter: brightness(1.25); }
 .bl span { overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+.bl.sel { box-shadow: 0 0 0 1px #f0c040 inset, 0 0 0 1px #f0c040; }
+.bl.grouped { outline: 1px dashed rgba(240, 192, 64, 0.35); outline-offset: -3px; }
+.bl.dragging { opacity: 0.25; }
 
 /* Ghost (drag preview) */
 #ghost {
@@ -245,6 +286,76 @@ nav a.active { color: #f0c040; }
 #bo-text:focus { color: #bbb; }
 .bo-invalid { color: #f44336 !important; }
 
+#gas-panel {
+  border-top: 1px solid #1e1e1e;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: #0d0d0d;
+}
+#gas-panel.collapsed #gas-body { display: none; }
+#gas-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 14px; border-bottom: 1px solid #1a1a1a;
+}
+#gas-title-wrap {
+  display: flex; align-items: center; gap: 10px;
+  min-width: 0;
+}
+#gas-title {
+  font-size: 0.65em; text-transform: uppercase; letter-spacing: 2px; color: #333;
+}
+#gas-subtitle {
+  font-size: 0.62em; color: #2a2a2a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#gas-body {
+  height: 132px; overflow: hidden; position: relative; background: #0b0f0b;
+}
+#gas-empty {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: #2e2e2e; font-size: 0.78em; pointer-events: none;
+}
+#gas-scroll {
+  overflow-x: auto; overflow-y: hidden; height: 100%;
+}
+#gas-inner {
+  position: relative; height: 100%;
+}
+#gas-svg {
+  display: block; height: 100%;
+}
+.gas-axis,
+.gas-grid {
+  stroke: #1d241d; stroke-width: 1;
+}
+.gas-zero {
+  stroke: #6e7f6e; stroke-width: 1;
+}
+.gas-path {
+  fill: none; stroke: #6bc66b; stroke-width: 2;
+}
+.gas-area-pos {
+  fill: rgba(76, 175, 80, 0.18);
+}
+.gas-area-neg {
+  fill: rgba(244, 67, 54, 0.16);
+}
+.gas-label {
+  fill: #3b4b3b; font-size: 10px; font-family: monospace;
+}
+.gas-hover-line {
+  stroke: #c7d8c7; stroke-width: 1; stroke-dasharray: 3 3;
+}
+.gas-hover-dot {
+  fill: #d7f5d7; stroke: #6bc66b; stroke-width: 1.5;
+}
+.gas-hover-bg {
+  fill: rgba(10, 16, 10, 0.92); stroke: #334233; stroke-width: 1;
+}
+.gas-hover-label {
+  fill: #d0ddd0; font-size: 11px; font-family: monospace;
+}
+
 /* ── Autocomplete dropdown ── */
 #ac {
   position: fixed; z-index: 6000; display: none;
@@ -294,6 +405,11 @@ nav a.active { color: #f0c040; }
       <button class="tbtn" onclick="zoom(-1)">− Zoom</button>
       <span id="zoom-info"></span>
       <button class="tbtn" onclick="zoom(1)">+ Zoom</button>
+      <button class="tbtn" onclick="addTrackSet()">+ Set</button>
+      <button class="tbtn" onclick="renameActiveTrackSet()">Rename Set</button>
+      <button class="tbtn tbtn-danger" onclick="deleteActiveTrackSet()">Delete Set</button>
+      <button class="tbtn" onclick="createGroupFromSelection()">Group Selection</button>
+      <button class="tbtn" onclick="ungroupSelection()">Ungroup</button>
       <div style="flex:1"></div>
       <button class="tbtn tbtn-danger" onclick="clearAll()">Clear</button>
       <button class="tbtn" onclick="saveBuild()">Save</button>
@@ -301,18 +417,38 @@ nav a.active { color: #f0c040; }
       <button class="tbtn" onclick="copyLink(this)">Copy Link</button>
     </div>
 
+    <div id="set-tabs"></div>
+
     <!-- Timeline -->
     <div id="tl-wrap">
       <div id="label-col">
         <div id="label-ruler-spacer"></div>
-        <div id="label-supply-cell">SUP</div>
+        <div id="label-supply-cell" style="display:none"></div>
         <div id="label-list"></div>
       </div>
       <div id="tl-scroll">
         <div id="tl-inner">
           <div id="ruler"></div>
-          <div id="supply-row"></div>
+          <div id="supply-row" style="display:none"></div>
           <div id="tracks"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="gas-panel" class="collapsed">
+      <div id="gas-header">
+        <div id="gas-title-wrap">
+          <span id="gas-title">Gas Bank</span>
+          <span id="gas-subtitle">Disabled by default. Expand to simulate extractor income and gas spending.</span>
+        </div>
+        <button class="tbtn" id="gas-toggle-btn" onclick="toggleGasPanel()">Show Gas</button>
+      </div>
+      <div id="gas-body">
+        <div id="gas-scroll">
+          <div id="gas-inner">
+            <svg id="gas-svg" xmlns="http://www.w3.org/2000/svg" aria-label="Gas bank graph"></svg>
+            <div id="gas-empty">No gas structures or gas spending in the active set</div>
+          </div>
         </div>
       </div>
     </div>
@@ -320,7 +456,7 @@ nav a.active { color: #f0c040; }
     <!-- Build order -->
     <div id="bo-section">
       <div id="bo-header">
-        <span>Build Order</span>
+        <span id="bo-title">Build Order</span>
         <span id="bo-hint">M:SS  Name [-> Name2]  —  (t) for track  —  Tab to autocomplete</span>
         <button class="tbtn" onclick="copyBO(this)">Copy</button>
       </div>
@@ -403,12 +539,12 @@ const DATA = [
   {name:"Carrier",race:"Protoss",type:"Unit",buildTime:88,mineralCost:350,gasCost:250,supplyCost:6,builtFrom:"Stargate"},
   {name:"Arbiter",race:"Protoss",type:"Unit",buildTime:100.8,mineralCost:100,gasCost:350,supplyCost:4,builtFrom:"Stargate"},
   {name:"Nexus",race:"Protoss",type:"Building",buildTime:120,mineralCost:400,gasCost:0,supplyCost:0,builtFrom:"Probe"},
-  {name:"Pylon",race:"Protoss",type:"Building",buildTime:30,mineralCost:100,gasCost:0,supplyCost:0,builtFrom:"Probe"},
+  {name:"Pylon",race:"Protoss",type:"Building",buildTime:19,mineralCost:100,gasCost:0,supplyCost:0,builtFrom:"Probe"},
   {name:"Assimilator",race:"Protoss",type:"Building",buildTime:40,mineralCost:100,gasCost:0,supplyCost:0,builtFrom:"Probe"},
-  {name:"Gateway",race:"Protoss",type:"Building",buildTime:60,mineralCost:150,gasCost:0,supplyCost:0,builtFrom:"Probe"},
+  {name:"Gateway",race:"Protoss",type:"Building",buildTime:38,mineralCost:150,gasCost:0,supplyCost:0,builtFrom:"Probe"},
   {name:"Forge",race:"Protoss",type:"Building",buildTime:40,mineralCost:150,gasCost:0,supplyCost:0,builtFrom:"Probe"},
   {name:"Photon Cannon",race:"Protoss",type:"Building",buildTime:50,mineralCost:150,gasCost:0,supplyCost:0,builtFrom:"Probe"},
-  {name:"Cybernetics Core",race:"Protoss",type:"Building",buildTime:60,mineralCost:200,gasCost:0,supplyCost:0,builtFrom:"Probe"},
+  {name:"Cybernetics Core",race:"Protoss",type:"Building",buildTime:38,mineralCost:200,gasCost:0,supplyCost:0,builtFrom:"Probe"},
   {name:"Robotics Facility",race:"Protoss",type:"Building",buildTime:80,mineralCost:200,gasCost:200,supplyCost:0,builtFrom:"Probe"},
   {name:"Stargate",race:"Protoss",type:"Building",buildTime:70,mineralCost:150,gasCost:150,supplyCost:0,builtFrom:"Probe"},
   {name:"Citadel of Adun",race:"Protoss",type:"Building",buildTime:60,mineralCost:150,gasCost:100,supplyCost:0,builtFrom:"Probe"},
@@ -430,8 +566,8 @@ const DATA = [
   {name:"Lurker",race:"Zerg",type:"Unit",buildTime:25,mineralCost:125,gasCost:125,supplyCost:2,builtFrom:"Hydralisk"},
   {name:"Guardian",race:"Zerg",type:"Unit",buildTime:25,mineralCost:150,gasCost:200,supplyCost:2,builtFrom:"Mutalisk"},
   {name:"Devourer",race:"Zerg",type:"Unit",buildTime:25,mineralCost:150,gasCost:150,supplyCost:2,builtFrom:"Mutalisk"},
-  {name:"Hatchery",race:"Zerg",type:"Building",buildTime:120,mineralCost:300,gasCost:0,supplyCost:0,builtFrom:"Drone"},
-  {name:"Lair",race:"Zerg",type:"Building",buildTime:100,mineralCost:150,gasCost:100,supplyCost:0,builtFrom:"Hatchery"},
+  {name:"Hatchery",race:"Zerg",type:"Building",buildTime:75,mineralCost:300,gasCost:0,supplyCost:0,builtFrom:"Drone"},
+  {name:"Lair",race:"Zerg",type:"Building",buildTime:63,mineralCost:150,gasCost:100,supplyCost:0,builtFrom:"Hatchery"},
   {name:"Hive",race:"Zerg",type:"Building",buildTime:120,mineralCost:200,gasCost:150,supplyCost:0,builtFrom:"Lair"},
   {name:"Spawning Pool",race:"Zerg",type:"Building",buildTime:80,mineralCost:200,gasCost:0,supplyCost:0,builtFrom:"Drone"},
   {name:"Creep Colony",race:"Zerg",type:"Building",buildTime:20,mineralCost:75,gasCost:0,supplyCost:0,builtFrom:"Drone"},
@@ -514,14 +650,14 @@ const DATA = [
   {name:"Air Armor 2",race:"Protoss",type:"Upgrade",buildTime:190,mineralCost:175,gasCost:175,supplyCost:0,builtFrom:"Cybernetics Core"},
   {name:"Air Armor 3",race:"Protoss",type:"Upgrade",buildTime:220,mineralCost:250,gasCost:250,supplyCost:0,builtFrom:"Cybernetics Core"},
   // Zerg Upgrades
-  {name:"Metabolic Boost",race:"Zerg",type:"Upgrade",buildTime:100,mineralCost:100,gasCost:100,supplyCost:0,builtFrom:"Spawning Pool"},
+  {name:"Metabolic Boost",race:"Zerg",type:"Upgrade",buildTime:63,mineralCost:100,gasCost:100,supplyCost:0,builtFrom:"Spawning Pool"},
   {name:"Adrenal Glands",race:"Zerg",type:"Upgrade",buildTime:100,mineralCost:200,gasCost:200,supplyCost:0,builtFrom:"Spawning Pool"},
   {name:"Muscular Augments",race:"Zerg",type:"Upgrade",buildTime:80,mineralCost:150,gasCost:150,supplyCost:0,builtFrom:"Hydralisk Den"},
   {name:"Grooved Spines",race:"Zerg",type:"Upgrade",buildTime:80,mineralCost:150,gasCost:150,supplyCost:0,builtFrom:"Hydralisk Den"},
   {name:"Lurker Aspect",race:"Zerg",type:"Upgrade",buildTime:100,mineralCost:200,gasCost:200,supplyCost:0,builtFrom:"Hydralisk Den"},
-  {name:"Pneumatized Carapace",race:"Zerg",type:"Upgrade",buildTime:100,mineralCost:150,gasCost:150,supplyCost:0,builtFrom:"Hatchery"},
-  {name:"Ventral Sacs",race:"Zerg",type:"Upgrade",buildTime:100,mineralCost:200,gasCost:200,supplyCost:0,builtFrom:"Hatchery"},
-  {name:"Antennae",race:"Zerg",type:"Upgrade",buildTime:80,mineralCost:150,gasCost:150,supplyCost:0,builtFrom:"Hatchery"},
+  {name:"Pneumatized Carapace",race:"Zerg",type:"Upgrade",buildTime:84,mineralCost:150,gasCost:150,supplyCost:0,builtFrom:"Hatchery"},
+  {name:"Ventral Sacs",race:"Zerg",type:"Upgrade",buildTime:101,mineralCost:200,gasCost:200,supplyCost:0,builtFrom:"Hatchery"},
+  {name:"Antennae",race:"Zerg",type:"Upgrade",buildTime:84,mineralCost:150,gasCost:150,supplyCost:0,builtFrom:"Hatchery"},
   {name:"Burrow",race:"Zerg",type:"Upgrade",buildTime:60,mineralCost:100,gasCost:100,supplyCost:0,builtFrom:"Hatchery"},
   {name:"Spawn Broodlings",race:"Zerg",type:"Upgrade",buildTime:80,mineralCost:100,gasCost:100,supplyCost:0,builtFrom:"Queens Nest"},
   {name:"Ensnare",race:"Zerg",type:"Upgrade",buildTime:80,mineralCost:100,gasCost:100,supplyCost:0,builtFrom:"Queens Nest"},
@@ -1537,5 +1673,6 @@ loadURL();
 buildAssetPanel();
 render();
 </script>
+<script src="build-order.override.js"></script>
 </body>
 </html>
